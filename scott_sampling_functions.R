@@ -1,5 +1,7 @@
-setwd('//Users/TScott/hwb_project')
+#setwd('//Users/TScott/hwb_project')
+setwd('C:/Users/tscott1/Documents/GitHub/hwb_project')
 rm(list=ls())
+
 sd<-read.csv("bakerclass_pilot.csv")
 
 
@@ -62,27 +64,13 @@ for(i in 1:ncol(out)){
 out[,i]<-ordered(out[,i])
 }
 
-moderun<-runmincordif(out,4,2,12,5,possibleqs,setvalues=c(1,4))
 
-screeners <- c(1,4)
-numqs<- 15
-
-
-#GENERATE POTENTIAL QUESTION BLOCK MATRICES
-possibleqs<-seq(1,numqs,1)[-c(screeners)]
-
-possibleqs
-
-runmincordif(data=sd,howmanyobs=10,howmanytries=1,nblock=5,qsperblock=5,screeners=c(1,4),numqs=15)
-
-nblocks=12;qsperblock=5;screeners=c(1,4);numqs=15;maxoccurence=3
 
 #SIMULATE A BLOCK DESIGN
 makedesign <- function(nblocks=12,qsperblock=5,screeners=c(1,4),numqs=15,maxoccurence=8)
 {design<-matrix(0,ncol=qsperblock,nrow=nblocks)
   for(p in 1:length(screeners)){design[,p]<-screeners[p]}
 #generate sample list
-sample.list<-rep(possibleqs,each=maxoccurence)
 for(i in 1:nblocks){ 
   for(q in (length(screeners)+1):ncol(design)){
     possibleqs<-seq(1,numqs,1)[tabulate(design,nbins=numqs)<maxoccurence]
@@ -91,13 +79,14 @@ for(i in 1:nblocks){
     design[i,q]<-s}}
   return(design)}
 
+
 #GENERATE MULTIPLE BLOCK DESIGNS
-multdesigns <- function(ndesigns=2,nblocks=12,qsperblock=5,screeners=c(1,4))
+multdesigns <- function(ndesigns=2,nblocks=12,qsperblock=5,screeners=c(1,4),numqs=15,maxoccurence=8)
 {
   designs <- list()
   for (i in 1:ndesigns)
   {
-    designs[[i]]<-as.data.frame(makedesign(nblocks,qsperblock,screeners))
+    designs[[i]]<-as.data.frame(makedesign(nblocks,qsperblock,screeners,numqs,maxoccurence))
   }
   return(designs)
 }
@@ -122,42 +111,42 @@ for(i in 1:nblocks)
 return(allblocks)
 }
 
+library(snow)
+require(mi)
+library(lme4)
 
 #BUILD LIST OF FAKE DATA
-temp<-multdesigns()
-
+#generate 16 designs
+temp<-multdesigns(ndesigns=500)
+#generate 16 fake datasets based upon 16 designs
 temp1<-lapply(1:length(temp), function(x) fakesample(design=temp[[x]]))
 
-temp2<-mclapply(1:length(temp1), function(x) mi(object=temp1[[x]],n.iter=5),)
+#run multiple imputation on each fake dataset
+require(doParallel)
+cl<-makeCluster(16)
+registerDoParallel(cl)
+multimputes<-foreach(i =1:length(temp1),.packages=c('mi')) %dopar% mi(object=temp1[[i]],n.iter=30)
+stopCluster(cl)
 
 
+#run imputation on each fake dataset
+da<-lapply(1:length(multimputes),function(x) mi.completed(multimputes[[x]]))
 
-detach(library='parallel')
-library(parallel)
-require(multicore)
-library(dplyr)
+#make each imputed dataset a data frame, select one of three imputed sets randomly for each imputation run
+da1<-lapply(1:length(da),function(x) as.data.frame(da[[x]][sample(1:3,1)]))
 
-temp<-fakesample(data=sd,design=test)
+#make values numeric
+da2<-lapply(1:length(da1),function(x) apply(da1[[x]],2,as.numeric))
 
-
-lapply(fakelist,mi,n.iter=10,n.imp=3,rand.imp.method='bootstrap',add.noise=noice.control(method='reshuffling',K=1))
-length(fakelist)
+numdat<-apply(sd,2,as.numeric)
 
 
-da<-mi.completed(dfdata)
-da<-da[1]
-da<-data.frame(da)
-for(i in 1:ncol(da)){
-  da[,i]<-as.numeric(da[,i])
-}
-for(i in 1:ncol(data)){
-  data[,i]<-as.numeric(data[,i])
-}
-made<-cor(da, use="pairwise.complete.obs", method="spearman")
-made<-made[1:numqs,1:numqs]
-test<-cor(data, use="pairwise.complete.obs", method="spearman")
-test<-test[1:numqs,1:numqs]
-result<-sum(abs(test-made))
-results[k]<-result
+fakecor<-lapply(1:length(da2),function(x) cor(da2[[x]], use='pairwise.complete.obs',method='spearman'))
+
+obscor<-cor(numdat,use='pairwise.complete.obs',method='spearman')
+
+#compar faked to observed (toss out values where NA for one question)
+cordiff.score<-lapply(1:length(fakecor),function(x) sum(abs(obscor-fakecor[[x]])))
+save.image('searchfordesign.RData')
 
 
