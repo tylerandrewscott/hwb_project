@@ -3,6 +3,10 @@ setwd('C:/Users/tscott1/Documents/GitHub/hwb_project')
 rm(list=ls())
 
 sd<-read.csv("bakerclass_pilot.csv")
+sd<-sd[-26,]
+require(mi)
+
+
 
 
 levels(sd[,2])<-c("16-21","22-29","30-39","40-49","50-59")
@@ -117,23 +121,30 @@ library(lme4)
 
 #BUILD LIST OF FAKE DATA
 #generate 16 designs
-temp<-multdesigns(ndesigns=500)
+temp<-multdesigns(ndesigns=1500)
 #generate 16 fake datasets based upon 16 designs
 temp1<-lapply(1:length(temp), function(x) fakesample(design=temp[[x]]))
+vec<-unlist(lapply(1:length(temp1), function(x) sum(colSums(apply(temp1[[x]],2,is.na))==nrow(temp1[[x]]))>0 ))
+temp1<-temp1[vec]
 
-#run multiple imputation on each fake dataset
+require(foreach)
 require(doParallel)
+#run multiple imputation models
 cl<-makeCluster(16)
 registerDoParallel(cl)
-multimputes<-foreach(i =1:length(temp1),.packages=c('mi')) %dopar% mi(object=temp1[[i]],n.iter=30)
+multimputes<-foreach(i = 1:length(temp1), .packages=c('mi')) %dopar% 
+  mi(object=temp1[[i]],n.iter=30,n.imp=3, add.noise=noise.control(method="reshuffling", K=1))
 stopCluster(cl)
 
 
+library(dplyr)
+library(plyr)
 #run imputation on each fake dataset
 da<-lapply(1:length(multimputes),function(x) mi.completed(multimputes[[x]]))
 
 #make each imputed dataset a data frame, select one of three imputed sets randomly for each imputation run
-da1<-lapply(1:length(da),function(x) as.data.frame(da[[x]][sample(1:3,1)]))
+da1<-lapply(1:length(da),function(x) as.data.frame(da[[x]][1]))
+                                                   #[sample(1:3,1)]))
 
 #make values numeric
 da2<-lapply(1:length(da1),function(x) apply(da1[[x]],2,as.numeric))
@@ -147,6 +158,6 @@ obscor<-cor(numdat,use='pairwise.complete.obs',method='spearman')
 
 #compar faked to observed (toss out values where NA for one question)
 cordiff.score<-lapply(1:length(fakecor),function(x) sum(abs(obscor-fakecor[[x]])))
-save.image('searchfordesign.RData')
+save.image('searchfordesign.sim7.RData')
 
 
