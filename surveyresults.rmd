@@ -1,6 +1,7 @@
 ---
 title: "Results from Joel's Class"
 output:
+  html_document: default
   pdf_document:
     fig_height: 6
     fig_width: 8
@@ -9,7 +10,9 @@ date: March 20, 2014
 
 ```{r echo=FALSE,warning=FALSE, message=FALSE}
 sd<-read.csv("bakerclass_pilot.csv")
+```
 
+```{r echo=FALSE}
 levels(sd[,2])<-c("16-21","22-29","30-39","40-49","50-59")
 levels(sd[,3])<-c("tac","pierce","balance","far")
 sd<-sd[,c(4:18)]
@@ -34,6 +37,7 @@ levels(sd[,12])<-c(0,1,3,12,52)
 levels(sd[,13])<-c(0,1,3,12,52)
 levels(sd[,14])<-c(1,.66,.5,.33,0)
 levels(sd[,15])<-c(1,.66,.5,.33,0)
+colnames(sd)<-c("Q3:How long have you lived in PS", "Q4:I am attached to Puget Sound region","Q5:I identify with Puget Sound region","Q6:How satisfied with life as whole","Q7:How frequently feel inspired in nature","Q8:How frequently nature reduces stress","Q9:How often outdoor in Winter","Q10:How often outdoor in summer","Q11:How often gather resources","Q12:able to harvest enough resources","Q13:participate in cultural activties","Q14:participate in environmental stewardship","Q15:work with others in community","Q16:trust local policy makers","17:trust experts")
 
 out<-sd
 out$id<-1:nrow(out)
@@ -43,11 +47,11 @@ require(ggplot2)
 ```
 
 ```{r Response Histograms, echo=FALSE}
-ggplot(mout)+geom_histogram(aes(x=value))+facet_wrap(~variable)+ggtitle("Responses to Individual Questions, Joel's Class")
+ggplot(mout)+geom_histogram(aes(x=value))+facet_wrap(~variable)+ggtitle("Responses to Individual Questions, Joel's Class")+theme(strip.text.x=element_text(size = 5))
 ```
 
 ```{r Responses Stacked, echo=FALSE}
-ggplot(mout)+geom_bar(aes(x=variable,fill=value), position="stack",stat="bin")+theme_bw()+ggtitle("Question Responses Binned, Joel's Class")+xlab("Question")+ylab("Response")
+ggplot(mout)+geom_bar(aes(x=variable,fill=value), position="stack",stat="bin")+theme_bw()+ggtitle("Question Responses Binned, Joel's Class")+xlab("Question")+ylab("Response")+theme(axis.text.x=element_text(angle=70, hjust=1))
 ```
 
 ```{r Response Patterns, echo=FALSE}
