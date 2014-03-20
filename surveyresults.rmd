@@ -1,0 +1,55 @@
+---
+title: "Results from Joel's Class"
+output:
+  pdf_document:
+    fig_height: 6
+    fig_width: 8
+date: March 20, 2014
+---
+
+```{r echo=FALSE,warning=FALSE, message=FALSE}
+sd<-read.csv("bakerclass_pilot.csv")
+
+levels(sd[,2])<-c("16-21","22-29","30-39","40-49","50-59")
+levels(sd[,3])<-c("tac","pierce","balance","far")
+sd<-sd[,c(4:18)]
+for(i in 1:ncol(sd)){
+  sd[,i]<-as.numeric(sd[,i])
+}
+for(i in 1:ncol(sd)){
+	sd[,i]<-as.character(sd[,i])
+}
+levels(sd[,1])<-c("1","1-3","4-10",">10")
+levels(sd[,2])<-c(2,1,0,-1,-2)
+levels(sd[,3])<-c(2,1,0,-1,-2)
+levels(sd[,4])<-c(2,1,0,-1,-2)
+levels(sd[,5])<-c(1,.75,.5,.25,0)
+levels(sd[,6])<-c(1,.75,.5,.25,0)
+levels(sd[,7])<-c(5,2,1,.25,0)
+levels(sd[,8])<-c(5,2,1,.25,0)
+levels(sd[,9])<-c(0,1,2,3,4)
+levels(sd[,10])<-c(4,3,2,1)
+levels(sd[,11])<-c(0,1,3,12,52)
+levels(sd[,12])<-c(0,1,3,12,52)
+levels(sd[,13])<-c(0,1,3,12,52)
+levels(sd[,14])<-c(1,.66,.5,.33,0)
+levels(sd[,15])<-c(1,.66,.5,.33,0)
+
+out<-sd
+out$id<-1:nrow(out)
+require(reshape2)
+mout<-melt(out, id="id")
+require(ggplot2)
+```
+
+```{r Response Histograms, echo=FALSE}
+ggplot(mout)+geom_histogram(aes(x=value))+facet_wrap(~variable)+ggtitle("Responses to Individual Questions, Joel's Class")
+```
+
+```{r Responses Stacked, echo=FALSE}
+ggplot(mout)+geom_bar(aes(x=variable,fill=value), position="stack",stat="bin")+theme_bw()+ggtitle("Question Responses Binned, Joel's Class")+xlab("Question")+ylab("Response")
+```
+
+```{r Response Patterns, echo=FALSE}
+ggplot(mout)+geom_line(aes(x=variable, y=value, group=id))+facet_wrap(~id)+ggtitle("Individual Response Patterns")+ylab("Question")+xlab("value")
+```
