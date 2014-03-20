@@ -1,10 +1,10 @@
 ---
 title: "Results from Joel's Class"
 output:
-  html_document: default
   pdf_document:
-    fig_height: 6
-    fig_width: 8
+    fig_height: 8
+    fig_width: 12
+  html_document: default
 date: March 20, 2014
 ---
 
