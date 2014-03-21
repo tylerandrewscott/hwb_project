@@ -16,27 +16,11 @@ sd<-read.csv("bakerclass_pilot.csv")
 levels(sd[,2])<-c("16-21","22-29","30-39","40-49","50-59")
 levels(sd[,3])<-c("tac","pierce","balance","far")
 sd<-sd[,c(4:18)]
-for(i in 1:ncol(sd)){
-  sd[,i]<-as.numeric(sd[,i])
-}
+
 for(i in 1:ncol(sd)){
 	sd[,i]<-as.character(sd[,i])
 }
-levels(sd[,1])<-c("1","1-3","4-10",">10")
-levels(sd[,2])<-c(2,1,0,-1,-2)
-levels(sd[,3])<-c(2,1,0,-1,-2)
-levels(sd[,4])<-c(2,1,0,-1,-2)
-levels(sd[,5])<-c(1,.75,.5,.25,0)
-levels(sd[,6])<-c(1,.75,.5,.25,0)
-levels(sd[,7])<-c(5,2,1,.25,0)
-levels(sd[,8])<-c(5,2,1,.25,0)
-levels(sd[,9])<-c(0,1,2,3,4)
-levels(sd[,10])<-c(4,3,2,1)
-levels(sd[,11])<-c(0,1,3,12,52)
-levels(sd[,12])<-c(0,1,3,12,52)
-levels(sd[,13])<-c(0,1,3,12,52)
-levels(sd[,14])<-c(1,.66,.5,.33,0)
-levels(sd[,15])<-c(1,.66,.5,.33,0)
+
 colnames(sd)<-c("Q3:How long have you lived in PS", "Q4:I am attached to Puget Sound region","Q5:I identify with Puget Sound region","Q6:How satisfied with life as whole","Q7:How frequently feel inspired in nature","Q8:How frequently nature reduces stress","Q9:How often outdoor in Winter","Q10:How often outdoor in summer","Q11:How often gather resources","Q12:able to harvest enough resources","Q13:participate in cultural activties","Q14:participate in environmental stewardship","Q15:work with others in community","Q16:trust local policy makers","17:trust experts")
 
 out<-sd
