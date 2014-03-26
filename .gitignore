@@ -6,7 +6,9 @@
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
+Icon
+
+.RData
 
 # Thumbnails
 ._*
