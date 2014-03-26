@@ -25,13 +25,14 @@ design<-matrix(0,ncol=qsperblock,nrow=nblocks)
    s<-ifelse(length(s1)>1,sample(s1,1),s1) 
    s<-ifelse(is.na(s)==TRUE,which.min(tabulate(design))[1],s)
    design[i,q]<-s
-   if((all((colSums(sapply(1:(i-1),function(x) design[x,(length(screeners)+1):qsperblock] %in% 
-            design[i,(length(screeners)+1):qsperblock])))<=blocksim)))
+   if(all((colSums(sapply(1:(i-1),function(x) design[x,(length(screeners)+1):qsperblock] %in% 
+            design[i,(length(screeners)+1):qsperblock])))<=blocksim))
    {break}
     }}
  }
 if(all(is.na(design)==FALSE)& 
-     all((sapply(1:nblocks, function(x) all(tabulate(design[x,])<2)))==TRUE))
+     all((sapply(1:nblocks, function(x) all(tabulate(design[x,])<2)))==TRUE)&
+     all(tabulate(design,nbins=numqs)>0))
 {break}}
 return(design)}
 

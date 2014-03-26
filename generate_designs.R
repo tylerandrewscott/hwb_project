@@ -77,27 +77,38 @@ require(plyr)
 tempA<-rlply(.n=2000,
       .expr=makedesign(nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,blocksim=4))
 
-
 #generate 16 fake datasets based upon 16 designs
 temp1<-lapply(1:length(tempA), function(x) fakesample(design=tempA[[x]],data=sd,numinblock=400))
 
 
+
+temp2 <- llply(.data=temp1, .fun= mi.info) # .parallel=TRUE, .paropts= list(.packages=c('mi')))
+
+
+
+cl<-makeCluster(16)
+registerDoParallel(cl)
+stopCluster(cl)
+
+mi.info(temp1[[1]])
+
+
+mi.info(temp1[[8]])
 #run multiple imputation on each fake dataset
 require(doParallel)
 
-cl<-makeCluster(16)
-registerDoParallel(cl)
-multimputesA<-foreach(i =1:length(temp1),.packages=c('mi')) %dopar% mi(object=temp1[[i]],n.iter=30,max.minutes=8)
-stopCluster(cl)
 
-cl<-makeCluster(16)
-registerDoParallel(cl)
-multimputesB<-foreach(i =1:length(temp2),.packages=c('mi')) %dopar% mi(object=temp2[[i]],n.iter=30,max.minutes=8)
+multimputesA<-foreach(i =1:length(temp1),
+                      .packages=c('mi')) %dopar% mi(object=temp1[[i]],n.iter=20,
+                                              max.minutes=8,check.coef.convergence=TRUE,
+                                              add.noise=FALSE)
 stopCluster(cl)
-
 save.image('searchfordesign.sim3.RData')
-
-
+temp1[[1]]
+mi(object=temp1[[1]],n.iter=20,
+   max.minutes=8,check.coef.convergence=TRUE,
+   add.noise=FALSE)
+?mi
 #run imputation on each fake dataset
 da<-lapply(1:length(multimputes),function(x) mi.completed(multimputes[[x]]))
 
