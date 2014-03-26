@@ -2,12 +2,10 @@
 setwd('C:/Users/tscott1/Documents/GitHub/hwb_project')
 rm(list=ls())
 
-
 #SIMULATE A BLOCK DESIGN
 makedesign <- function(nblocks,qsperblock,screeners,numqs,maxoccurence,blocksim)
 {
 repeat{
-  
 design<-matrix(0,ncol=qsperblock,nrow=nblocks)
  for(p in 1:length(screeners)){design[,p]<-screeners[p]}
  #generate sample list
@@ -17,12 +15,9 @@ design<-matrix(0,ncol=qsperblock,nrow=nblocks)
  #is question already in design?
  s1<-c(possibleqs[possibleqs %in% design[1,]==FALSE])
  s<-ifelse(length(s1)>1,sample(s1,1),s1) 
- design[i,q]<-s
- }}
- 
+ design[i,q]<-s}}
  for (i in 2:nblocks)
- {
-   for (q in (length(screeners)+1):ncol(design)){
+ {for (q in (length(screeners)+1):ncol(design)){
     repeat{
    possibleqs<-seq(1,numqs,1)[tabulate(design,nbins=numqs)<maxoccurence]
    #is question already in design?
@@ -33,19 +28,12 @@ design<-matrix(0,ncol=qsperblock,nrow=nblocks)
    if((all((colSums(sapply(1:(i-1),function(x) design[x,(length(screeners)+1):qsperblock] %in% 
             design[i,(length(screeners)+1):qsperblock])))<=blocksim)))
    {break}
- 
     }}
  }
-return(design)}}
-
- 
-makedesign(nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,blocksim=4)
-
-
-
-
-
-#test<-makedesign(nblocks=11,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,maxpair=1)
+if(all(is.na(design)==FALSE)& 
+     all((sapply(1:nblocks, function(x) all(tabulate(design[x,])<2)))==TRUE))
+{break}}
+return(design)}
 
 #GENERATE MULTIPLE BLOCK DESIGNS
 multdesigns <- function(ndesigns,nblocks,qsperblock,screeners,numqs,maxoccurence,blocksim)
@@ -59,6 +47,7 @@ multdesigns <- function(ndesigns,nblocks,qsperblock,screeners,numqs,maxoccurence
 }
 
 #Build Fake Data for 1 design
+
 fakesample<-function(design,data,numinblock)
 {
   nb <- nrow(design)

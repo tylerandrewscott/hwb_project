@@ -71,16 +71,15 @@ colnames(sd)<-paste('Q',seq(1,15,1),sep='')
 require(snow)
 require(mi)
 require(lme4)
-
+require(plyr)
 #BUILD LIST OF FAKE DATA
-#generate 16 designs
-tempA<-multdesigns(ndesigns=2000,nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,maxpair=2)
-tempB<-multdesigns(ndesigns=2000,nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,maxpair=1)
+#generate 2000 designs
+tempA<-rlply(.n=2000,
+      .expr=makedesign(nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,blocksim=4))
+
+
 #generate 16 fake datasets based upon 16 designs
 temp1<-lapply(1:length(tempA), function(x) fakesample(design=tempA[[x]],data=sd,numinblock=400))
-temp2<-lapply(1:length(tempB), function(x) fakesample(design=tempB[[x]],data=sd,numinblock=400))
-
-
 
 
 #run multiple imputation on each fake dataset
