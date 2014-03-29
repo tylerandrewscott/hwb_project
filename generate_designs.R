@@ -23,6 +23,10 @@ for(i in 1:ncol(sd)){
 
 #code levels for variables
 
+qlabels<-c('Q1:Howlong','Q2:PSattach','Q3:PSident','Q4:Howsatisfied','Q5:natinspire','Q6:natstress','Q7:wintrec',
+  'Q8:sumrec','Q9:resgather','Q10:resable','Q11:cultureact','Q12:stewardact','Q13:workothers','Q14:trustpolicy',
+  'Q15:trustexperts')
+
 #Q1: How long have you lived in PS
 levels(sd[,1])<-c("1","1-3","4-10",">10")
 #Q2: I am attached to Puget Sound region
@@ -67,6 +71,8 @@ for(i in 1:ncol(out)){
 sd<-out
 colnames(sd)<-paste('Q',seq(1,15,1),sep='')
 
+attach('runmiresults.RData')
+
 
 require(snow)
 require(mi)
@@ -74,9 +80,17 @@ require(lme4)
 require(plyr)
 #BUILD LIST OF FAKE DATA
 #generate 2000 designs
-tempA<-rlply(.n=2000,
-      .expr=makedesign(nblocks=12,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=4,blocksim=4))
 
+
+tempA<-rlply(.n=1,
+      .expr=makedesign(nblocks=24,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=12,
+                       blocksim=3,minask=7))
+
+
+
+tempA
+tabulate(tempA[[1]])
+tabulate(tempA[[1]])
 #generate 16 fake datasets based upon 16 designs
 temp1<-lapply(1:length(tempA), function(x) fakesample(design=tempA[[x]],data=sd,numinblock=400))
 
@@ -99,39 +113,55 @@ multimputesA<-
 stopCluster(cl)
 save.image('runmiresults.RData')
 
-test
-
-#run imputation on each fake dataset
-cl<-makeCluster(16)
-registerDoParallel(cl)
-da<-llply(.data=multimputesA, .fun=mi.completed, .parallel=TRUE,
-          .paropts = list(.packages='mi',.verbose=TRUE))
-stopCluster(cl)
-save.image('runmiresults.RData')
 
 
-apply(1:length(multimputes),function(x) mi.completed(multimputes[[x]]))
+da<-llply(.data=multimputesA, .fun=mi.completed,.progress='text')
 
 #make each imputed dataset a data frame, select one of three imputed sets randomly for each imputation run
 da1<-lapply(1:length(da),function(x) as.data.frame(da[[x]][1]))
-#[sample(1:3,1)
+
 #make values numeric
+
 da2<-lapply(1:length(da1),function(x) apply(da1[[x]],2,as.numeric))
 
 numdat<-apply(sd,2,as.numeric)
 
-
-fakecor<-lapply(1:length(da2),function(x) cor(da2[[x]], use='pairwise.complete.obs',method='spearman'))
+fakecor<-llply(.data=da2,.fun=cor,use='pairwise.complete.obs',method='spearman',.progress='text')
 
 obscor<-cor(numdat,use='pairwise.complete.obs',method='spearman')
 
 #compar faked to observed (toss out values where NA for one question)
 cordiff.score<-lapply(1:length(fakecor),function(x) sum(abs(obscor-fakecor[[x]])))
 
+cordiff.score
 
-which.max(unlist(cordiff.score))
+min(unlist(cordiff.score))
+sum(unlist(cordiff.score)<16.5)
 
 
+
+best <- which.min(unlist(cordiff.score))
+small3 <- which(unlist(cordiff.score)<16.5)
+
+#best
+tabulate(tempA[[best]])
+bd<-tempA[[best]]
+qlabels
+bdq<-bd
+for (i in 1:nrow(bd))
+{
+  for (q in 1:ncol(bd))
+  {
+    
+    bdq[i,q]<-qlabels[bd[i,q]]
+  }
+}
+
+write.csv(as.data.frame(bdq),'bestdesign.csv')
+#2nd place
+tempA[[small3[2]]]
+#3rd place
+tempA[[small3[3]]]
 
 save.image('searchfordesign.sim3.RData')
 
