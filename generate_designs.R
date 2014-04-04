@@ -71,7 +71,7 @@ for(i in 1:ncol(out)){
 sd<-out
 colnames(sd)<-paste('Q',seq(1,15,1),sep='')
 
-attach('runmiresults.RData')
+#attach('runmiresults.RData')
 
 
 require(snow)
@@ -82,9 +82,33 @@ require(plyr)
 #generate 2000 designs
 
 
-tempA<-rlply(.n=1,
-      .expr=makedesign(nblocks=24,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=12,
-                       blocksim=3,minask=7))
+tempA<-rlply(.n=500,
+      .expr=makedesign(nblocks=36,qsperblock=6,screeners=c(4,1),numqs=15,maxoccurence=13,
+                       blocksim=6,minask=10,verbose=FALSE,obs.all.combins=FALSE))
+
+
+tabulate(tempA[[1]])
+
+36*4
+13*10
+
+
+tabulate(tempA[[1]])
+24*3.20*150
+12*3.20*300
+
+
+
+10000/(36*3.20)
+9 (gather resources) and 10 (able to harvest)
+3 (identity) and 5 (inspiration)
+2 (attached) and 5 (inspiration)
+2 (attached) and 3 (identity)
+14 (trust policymakers) and 15 (trust experts)
+12 (environmental stewardship) and/or 14, 15
+
+
+
 
 
 
