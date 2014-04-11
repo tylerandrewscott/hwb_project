@@ -112,6 +112,15 @@ else
 
 
 
+#9 (gather resources) and 10 (able to harvest)
+#3 (identity) and 5 (inspiration)
+#2 (attached) and 5 (inspiration)
+#2 (attached) and 3 (identity)
+#14 (trust policymakers) and 15 (trust experts)
+#12 (environmental stewardship) and/or 14, 15
+
+
+
 
 #GENERATE MULTIPLE BLOCK DESIGNS
 multdesigns <- function(ndesigns,nblocks,qsperblock,screeners,numqs,maxoccurence,blocksim)
